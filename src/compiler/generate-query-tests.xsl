@@ -231,9 +231,31 @@
                </xsl:for-each>
                <xsl:text>)&#10;</xsl:text>
                <xsl:text>    return (&#10;</xsl:text>
-               <xsl:text>      test:report-value($</xsl:text>
-               <xsl:value-of select="$xspec-prefix"/>
-               <xsl:text>:result, '</xsl:text>
+               <!-- PATCH arkamy : Hold the @test in order to have the correct display
+                    in case of test KO.
+                     Pb these function seems to be called for a scenario and not for each of
+                     its expect clause.
+                     Works with one expect, doesn't work with severals
+               -->
+               <xsl:text>      test:report-value(</xsl:text>
+               <xsl:variable name="test" select="x:expect[1]/@test"/>
+               <xsl:choose>
+                  <xsl:when test="exists($test)">
+                     <xsl:if test="not(contains($test, '$x:result'))">
+                        <xsl:text>$</xsl:text>
+                        <xsl:value-of select="$xspec-prefix"/>
+                        <xsl:text>:result</xsl:text>
+                     </xsl:if>
+                     <xsl:value-of select="$test"/>
+                  </xsl:when>
+                  <xsl:otherwise>
+                     <xsl:text>$</xsl:text>
+                     <xsl:value-of select="$xspec-prefix"/>
+                     <xsl:text>:result</xsl:text>
+                  </xsl:otherwise>
+               </xsl:choose>
+               <xsl:text>, '</xsl:text>
+							 <!-- END OF PATCH arkamy -->
                <xsl:value-of select="$xspec-prefix"/>
                <xsl:text>:result'),&#10;</xsl:text>
             </xsl:when>
@@ -343,11 +365,27 @@
          <xsl:choose>
             <xsl:when test="exists(@test) and exists(node())">
                <xsl:text>      test:deep-equal($local:expected, </xsl:text>
+               <!-- PATCH arkamy : hold @test - Prefix by $x:result is required -->
+               <xsl:if test="not(contains(@test, '$x:result'))">
+                  <xsl:text>$</xsl:text>
+                  <xsl:value-of select="$xspec-prefix"/>
+                  <xsl:text>:result</xsl:text>
+               </xsl:if>
+							 <!-- END OF PATCH arkamy -->
                <xsl:value-of select="@test"/>
                <xsl:text>)&#10;</xsl:text>
             </xsl:when>
             <xsl:when test="exists(@test)">
-               <xsl:text>      ( </xsl:text>
+               <!-- PATCH arkamy : use of $local:expected is required -->
+               <xsl:text>      ( $local:expected=</xsl:text>
+							 <!-- END OF PATCH arkamy -->
+               <!-- PATCH arkamy : hold @test - Prefix by $x:result is required -->
+               <xsl:if test="not(contains(@test, '$x:result'))">
+                  <xsl:text>$</xsl:text>
+                  <xsl:value-of select="$xspec-prefix"/>
+                  <xsl:text>:result</xsl:text>
+               </xsl:if>
+							 <!-- END OF PATCH arkamy -->
                <xsl:value-of select="@test"/>
                <xsl:text> )&#10;</xsl:text>
             </xsl:when>
