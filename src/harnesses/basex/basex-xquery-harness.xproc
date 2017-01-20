@@ -45,6 +45,16 @@
 		select="
        resolve-uri('src/compiler/generate-query-utils.xql', $xspec-home)"/>
 		
+	<p:variable name="createDatabases.uri"
+		select="
+			resolve-uri('src/harnesses/basex/createDatabases.xqy', $xspec-home)"/>
+	<p:variable name="dropDatabases.uri"
+		select="
+		resolve-uri('src/harnesses/basex/dropDatabases.xqy', $xspec-home)"/>
+	<p:variable name="xspecForBasex.uri"
+		select="
+		resolve-uri('src/harnesses/basex/generate-xspec-for-persistent-db.xsl', $xspec-home)"/>
+		
 	<p:string-replace match="xsl:import/@href" name="compiler">
 		<p:with-option name="replace" select="concat('''', $compiler, '''')"/>
 		<p:input port="source">
@@ -61,6 +71,42 @@
 		</p:input>
 	</p:string-replace>
 
+	<!-- Create basex databases from scenarii in the XSpec -->
+	<p:load name="createDatabases_xquery">
+		<p:with-option name="href" select="$createDatabases.uri"/>
+	</p:load>
+	<bxs:query name="createDatabases">
+		<p:input port="source">
+			<p:pipe step="basex-xquery-harness" port="source"/>
+		</p:input>
+		<p:input port="query">
+			<p:pipe step="createDatabases_xquery" port="result"/>
+		</p:input>
+		<p:log port="result" href="createDatabases.log.xml"/>
+	</bxs:query>
+	
+	<p:sink/>
+
+	<!-- Update the XSpec to work on basex databases created in preceding step -->	
+	<!-- Let it in comment since not finalized -->
+	<!--
+	<p:load name="xspecForBasex_doc">
+		<p:with-option name="href" select="$xspecForBasex.uri"/>
+	</p:load>
+	<p:xslt name="xspecForBasex">
+		<p:input port="source">
+			<p:pipe step="basex-xquery-harness" port="source"/>
+		</p:input>
+		<p:input port="stylesheet">
+			<p:pipe step="xspecForBasex_doc" port="result"/>
+		</p:input>
+		<p:input port="parameters">
+			<p:empty/>
+		</p:input>
+		<p:log port="result" href="xspecForBasex.log.xml"/>
+	</p:xslt>
+	-->
+	
 	<!-- Compile the XSpec into a xquery -->
 	<p:xslt name="compile">
 		<p:input port="source">
@@ -86,6 +132,26 @@
 		</p:input>
 		<p:log port="result" href="result.xml"/>
 	</bxs:query>
+	
+	<!-- Drop basex databases from scenarii in the XSpec -->	
+	<!-- Let it under comment until the xspecForBasex works.
+		   Allow to execute manually a xquery on persistent databases created above -->
+	<!--
+	<p:load name="dropDatabases_xquery">
+		<p:with-option name="href" select="$dropDatabases.uri"/>
+	</p:load>
+	<bxs:query name="dropDatabases">
+		<p:input port="source">
+			<p:pipe step="basex-xquery-harness" port="source"/>
+		</p:input>
+		<p:input port="query">
+			<p:pipe step="dropDatabases_xquery" port="result"/>
+		</p:input>
+		<p:log port="result" href="dropDatabases.log.xml"/>
+	</bxs:query>
+	
+	<p:sink/>
+	-->
 	
 	<!-- Convert the XML Report to HTML -->
 	<p:choose name="html-report">
