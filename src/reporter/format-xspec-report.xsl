@@ -132,6 +132,7 @@
          <xsl:text>)</xsl:text>
       </title>
       <link rel="stylesheet" type="text/css" href="{ $report-css-uri }"/>
+    	<meta charset="UTF-8"/>
       <xsl:call-template name="x:html-head-callback"/>
     </head>
     <body>
