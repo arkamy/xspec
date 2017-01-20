@@ -162,7 +162,13 @@ declare function test:report-value(
   element { fn:QName($wrapper-ns, $wrapper-name) } {
     if ( $value[1] instance of attribute() ) then (
         attribute { 'select' } { '/*/(@* | node())' },
-        element { fn:QName($wrapper-ns, 'temp') } { $value }
+        (: PATCH arkamy : Add a temp element for each attribute,
+           before fix, the construction doesn't work for several attributes :
+            element { fn:QName($wrapper-ns, 'temp') } { $value } 
+         :)
+        for $i in 1 to count($value)
+        return element { fn:QName($wrapper-ns, 'temp') } { $value[$i] }
+				(: END OF PATCH aarkamy :)
       )
     else if ( $value instance of node()+ ) then (
         if ( $value instance of document-node() ) then
